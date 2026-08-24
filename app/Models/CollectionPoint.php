@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CollectionPoint extends Model
 {
+    /** @use HasFactory<\Database\Factories\CollectionPointFactory> */
+    use HasFactory;
+
     /**
      * Tipos de resíduo aceitos pela aplicação (valores canônicos).
      * Os termos livres do CSV são mapeados para estes valores no seeder.
