@@ -24,7 +24,7 @@ points. Submissions stay pending until the team approves them in the admin area.
 
 | Layer | Technology |
 |---|---|
-| Backend | PHP 8.3, Laravel 13 (REST API) |
+| Backend | PHP 8.4, Laravel 13 (REST API) |
 | Frontend | Vue 3 + Vuetify 3 + Vue Router (SPA), Vite |
 | Map | Leaflet + OpenStreetMap |
 | Database | PostgreSQL 16 |
@@ -58,7 +58,7 @@ creates both the development and the test database on first boot.
 
 ## Running without Docker
 
-Requirements: **PHP 8.3+**, **Composer**, **Node.js 20+**, and a reachable **PostgreSQL 16**.
+Requirements: **PHP 8.4+**, **Composer**, **Node.js 20+**, and a reachable **PostgreSQL 16**.
 
 ```bash
 composer run setup      # installs dependencies, creates .env, generates the key, migrates and builds assets
