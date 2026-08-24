@@ -12,6 +12,28 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
+# Grava uma chave no .env, criando a linha se ela não existir.
+set_env() {
+    if grep -q "^$1=" .env; then
+        sed -i "s|^$1=.*|$1=$2|" .env
+    else
+        printf '%s=%s\n' "$1" "$2" >> .env
+    fi
+}
+
+# As credenciais do banco precisam estar no .env, e não apenas no ambiente do
+# processo: `artisan serve` repassa ao servidor filho somente uma lista fixa de
+# variáveis (APP_ENV, PATH, LARAVEL_SAIL e as do Xdebug). DB_HOST e as demais
+# são descartadas, então o app servido leria o .env e tentaria 127.0.0.1 —
+# mesmo com as migrations tendo funcionado, que rodam no processo pai.
+echo "==> aplicando as credenciais do compose ao .env"
+set_env DB_CONNECTION "${DB_CONNECTION:-pgsql}"
+set_env DB_HOST "${DB_HOST:-db}"
+set_env DB_PORT "${DB_PORT:-5432}"
+set_env DB_DATABASE "${DB_DATABASE:-ecodescarte}"
+set_env DB_USERNAME "${DB_USERNAME:-ecodescarte}"
+set_env DB_PASSWORD "${DB_PASSWORD:-secret}"
+
 # Gera a APP_KEY apenas se ainda não houver uma.
 if ! grep -q '^APP_KEY=base64:' .env; then
     echo "==> gerando APP_KEY"
