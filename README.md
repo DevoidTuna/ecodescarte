@@ -1,5 +1,7 @@
 # EcoDescarte ♻️
 
+[![CI](https://github.com/DevoidTuna/ecodescarte/actions/workflows/ci.yml/badge.svg)](https://github.com/DevoidTuna/ecodescarte/actions/workflows/ci.yml)
+
 A collaborative map of proper waste-disposal points across **Brazil**.
 
 Anyone can look up where to drop off a given type of waste — batteries, cooking oil,
@@ -25,17 +27,38 @@ points. Submissions stay pending until the team approves them in the admin area.
 | Backend | PHP 8.3, Laravel 13 (REST API) |
 | Frontend | Vue 3 + Vuetify 3 + Vue Router (SPA), Vite |
 | Map | Leaflet + OpenStreetMap |
-| Database | SQLite (`database/database.sqlite`) |
+| Database | PostgreSQL 16 |
+| Containers | Docker Compose |
+| CI | GitHub Actions — feature tests against PostgreSQL, plus asset and image builds |
 
 Laravel serves the SPA from a single Blade view — all screen routing happens client-side.
 Communication goes through a JSON API under `/api`, split into public routes (browsing and
-submitting points) and Bearer-token-protected routes for administration. Token auth is
-handled by a custom `AuthenticateApiToken` middleware rather than a package, keeping the
-prototype free of an OAuth dependency it doesn't need.
+submitting points) and Bearer-token-protected routes for administration.
 
-## Running locally
+Two decisions worth calling out:
 
-Requirements: **PHP 8.3+**, **Composer**, **Node.js 20+**.
+- **Token auth is a custom `AuthenticateApiToken` middleware** rather than a package. Only
+  the SHA-256 hash of a token is persisted; the raw value exists solely on the client, so a
+  database leak does not hand over live sessions. The prototype gets the property it needs
+  without an OAuth dependency it does not.
+- **PostgreSQL in development, tests and CI alike.** Tests run against the same engine as
+  production rather than an in-memory SQLite, so dialect differences — the `json` column on
+  `waste_types`, decimal coordinate precision — cannot pass locally and fail in production.
+
+## Running with Docker
+
+```bash
+docker compose up --build
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed
+```
+
+The app is served at **http://localhost:8000**. Compose starts PostgreSQL alongside it and
+creates both the development and the test database on first boot.
+
+## Running without Docker
+
+Requirements: **PHP 8.3+**, **Composer**, **Node.js 20+**, and a reachable **PostgreSQL 16**.
 
 ```bash
 composer run setup      # installs dependencies, creates .env, generates the key, migrates and builds assets
@@ -45,11 +68,19 @@ composer run dev        # starts the server, queue worker, logs and Vite togethe
 
 Then open **http://localhost:8000**.
 
-> If port 8000 is taken, use `php artisan serve --port=8001` (alongside `npm run dev` in
-> another terminal) and browse to `localhost`, not `127.0.0.1`.
+## Tests
 
-If `migrate` complains that the database doesn't exist, create the file first:
-`touch database/database.sqlite`.
+The suite covers the moderation boundary end to end: a submitted point cannot approve
+itself, an unapproved point never reaches the public map, admin routes are unreachable
+without a valid token, and approving a point publishes it.
+
+```bash
+docker compose up -d db     # the suite needs PostgreSQL running
+php artisan test
+```
+
+Tests use the `ecodescarte_test` database declared in `.env.testing`, kept separate from the
+development one so `RefreshDatabase` never touches local data.
 
 ## Team area access
 
@@ -68,6 +99,7 @@ app/
   Http/Middleware/         # AuthenticateApiToken — Bearer token guard for admin routes
   Models/                  # CollectionPoint, User
 database/
+  factories/               # CollectionPointFactory, UserFactory
   migrations/              # collection points table + auth columns
   seeders/                 # admin user + real collection points for Itajaí and region
 resources/js/
@@ -79,4 +111,5 @@ resources/js/
 routes/
   api.php                  # API routes, public and token-protected
   web.php                  # fallback that serves the SPA
+tests/Feature/             # approval workflow and authentication
 ```
