@@ -73,3 +73,41 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t ecodescarte:ci .
+
+  smoke:
+    name: Boot the stack end to end
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Sobe exatamente como um clone novo subiria: um comando, nada manual.
+      - name: docker compose up
+        run: docker compose up --build -d
+
+      - name: Wait for the app to answer
+        run: |
+          for i in $(seq 1 40); do
+            if curl -fsS http://localhost:8000 >/dev/null 2>&1; then
+              echo "app respondeu na tentativa $i"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "app não respondeu a tempo"
+          docker compose logs
+          exit 1
+
+      - name: The seeded points must be served
+        run: |
+          curl -fsS http://localhost:8000/api/points -o points.json
+          head -c 400 points.json
+          grep -q 'Ecoponto' points.json
+
+      - name: Show entrypoint output
+        if: always()
+        run: docker compose logs app
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
