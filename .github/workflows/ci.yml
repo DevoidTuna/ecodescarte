@@ -85,24 +85,41 @@ jobs:
       - name: docker compose up
         run: docker compose up --build -d
 
-      - name: Wait for the app to answer
+      - name: Wait for the server to accept connections
         run: |
           for i in $(seq 1 40); do
-            if curl -fsS http://localhost:8000 >/dev/null 2>&1; then
-              echo "app respondeu na tentativa $i"
+            if curl -sS -o /dev/null http://localhost:8000 2>/dev/null; then
+              echo "servidor aceitando conexões na tentativa $i"
               exit 0
             fi
             sleep 5
           done
-          echo "app não respondeu a tempo"
+          echo "servidor não aceitou conexões"
           docker compose logs
           exit 1
 
+      - name: Diagnose the responses
+        run: |
+          echo "--- GET / ---"
+          curl -sS -o body.html -w 'status=%{http_code}\n' http://localhost:8000 || true
+          head -c 3000 body.html || true
+          echo ""
+          echo "--- GET /api/points ---"
+          curl -sS -o points.json -w 'status=%{http_code}\n' http://localhost:8000/api/points || true
+          head -c 400 points.json || true
+          echo ""
+          echo "--- public/build no container ---"
+          docker compose exec -T app ls -la public/build || true
+          docker compose exec -T app cat public/build/manifest.json || true
+
       - name: The seeded points must be served
         run: |
-          curl -fsS http://localhost:8000/api/points -o points.json
-          head -c 400 points.json
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://localhost:8000/api/points)" = "200"
           grep -q 'Ecoponto' points.json
+
+      - name: The SPA shell must render
+        run: |
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://localhost:8000)" = "200"
 
       - name: Show entrypoint output
         if: always()
