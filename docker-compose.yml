@@ -35,6 +35,7 @@ services:
       - .:/app
       - /app/vendor
       - /app/node_modules
+      - /app/public/build
 
 volumes:
   db-data:

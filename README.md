@@ -49,9 +49,13 @@ Two decisions worth calling out:
 
 ```bash
 docker compose up --build
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --seed
 ```
+
+That is the entire setup. The container entrypoint creates `.env`, generates the app key,
+waits for PostgreSQL, runs the migrations and seeds the collection points before starting
+the server — a fresh clone goes from nothing to a populated map in one command. Seeding is
+idempotent (`firstOrCreate`), so restarting never duplicates points or overwrites edits made
+in the admin area.
 
 The app is served at **http://localhost:8000**. Compose starts PostgreSQL alongside it and
 creates both the development and the test database on first boot.

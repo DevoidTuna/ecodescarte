@@ -82,16 +82,23 @@ class CollectionPointSeeder extends Seeder
         ];
 
         foreach ($pontos as [$cidade, $nome, $endereco, $lat, $lng, $tiposRaw]) {
-            CollectionPoint::create([
-                'name' => $nome,
-                'address' => $endereco,
-                'latitude' => $lat,
-                'longitude' => $lng,
-                'waste_types' => $this->mapearTipos($tiposRaw),
-                'contact_phone' => null,
-                'contact_email' => null,
-                'status' => 'approved',
-            ]);
+            // firstOrCreate em vez de create: o seeder roda a cada boot do
+            // container, e reexecutá-lo não pode duplicar os pontos nem
+            // sobrescrever ajustes feitos pela equipe no /admin.
+            CollectionPoint::firstOrCreate(
+                [
+                    'name' => $nome,
+                    'address' => $endereco,
+                ],
+                [
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                    'waste_types' => $this->mapearTipos($tiposRaw),
+                    'contact_phone' => null,
+                    'contact_email' => null,
+                    'status' => 'approved',
+                ],
+            );
         }
     }
 }
