@@ -60,6 +60,11 @@ in the admin area.
 The app is served at **http://localhost:8000**. Compose starts PostgreSQL alongside it and
 creates both the development and the test database on first boot.
 
+> The entrypoint writes the compose database credentials into `.env` on every boot. This is
+> required because `artisan serve` forwards only a fixed allowlist of environment variables
+> to the server process it spawns, so `DB_HOST` would otherwise never reach the running app.
+> If you also run the project outside Docker, expect those lines to be rewritten.
+
 ## Running without Docker
 
 Requirements: **PHP 8.4+**, **Composer**, **Node.js 20+**, and a reachable **PostgreSQL 16**.

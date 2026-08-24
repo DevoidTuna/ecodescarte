@@ -95,31 +95,28 @@ jobs:
             sleep 5
           done
           echo "servidor não aceitou conexões"
-          docker compose logs
           exit 1
 
-      - name: Diagnose the responses
+      # Prova que o entrypoint migrou e populou o banco: os pontos do seed
+      # precisam estar sendo servidos pela API.
+      - name: The seeded points must be served
+        run: |
+          curl -sS -o points.json -w 'status=%{http_code}\n' --fail http://localhost:8000/api/points
+          grep -q 'Ecoponto' points.json
+
+      - name: The SPA shell must render
+        run: curl -sS -o /dev/null --fail http://localhost:8000
+
+      - name: Diagnose on failure
+        if: failure()
         run: |
           echo "--- GET / ---"
           curl -sS -o body.html -w 'status=%{http_code}\n' http://localhost:8000 || true
           head -c 3000 body.html || true
-          echo ""
           echo "--- GET /api/points ---"
-          curl -sS -o points.json -w 'status=%{http_code}\n' http://localhost:8000/api/points || true
-          head -c 400 points.json || true
-          echo ""
-          echo "--- public/build no container ---"
+          curl -sS -w 'status=%{http_code}\n' http://localhost:8000/api/points | head -c 500 || true
+          echo "--- public/build ---"
           docker compose exec -T app ls -la public/build || true
-          docker compose exec -T app cat public/build/manifest.json || true
-
-      - name: The seeded points must be served
-        run: |
-          test "$(curl -sS -o /dev/null -w '%{http_code}' http://localhost:8000/api/points)" = "200"
-          grep -q 'Ecoponto' points.json
-
-      - name: The SPA shell must render
-        run: |
-          test "$(curl -sS -o /dev/null -w '%{http_code}' http://localhost:8000)" = "200"
 
       - name: Show entrypoint output
         if: always()
