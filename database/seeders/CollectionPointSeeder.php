@@ -11,7 +11,7 @@ class CollectionPointSeeder extends Seeder
     /**
      * Dictionary: free-text term from the CSV (lowercased) => canonical type.
      */
-    private const MAPA_TIPOS = [
+    private const TYPE_MAP = [
         'vidro' => 'vidro',
         'plástico' => 'plastico',
         'metal' => 'metal',
@@ -41,17 +41,17 @@ class CollectionPointSeeder extends Seeder
      * Converts the CSV type string ("a; b; c") into the canonical list, with
      * no duplicates. Unknown terms become 'outros'.
      */
-    private function mapearTipos(string $raw): array
+    private function mapTypes(string $raw): array
     {
-        $tipos = collect(explode(';', $raw))
-            ->map(fn ($t) => Str::of($t)->trim()->lower()->value())
+        $types = collect(explode(';', $raw))
+            ->map(fn ($term) => Str::of($term)->trim()->lower()->value())
             ->filter()
-            ->map(fn ($t) => self::MAPA_TIPOS[$t] ?? 'outros')
+            ->map(fn ($term) => self::TYPE_MAP[$term] ?? 'outros')
             ->unique()
             ->values()
             ->all();
 
-        return $tipos;
+        return $types;
     }
 
     /**
@@ -59,7 +59,7 @@ class CollectionPointSeeder extends Seeder
      */
     public function run(): void
     {
-        $pontos = [
+        $points = [
             ['Itajaí', 'Ecoponto do Centreventos', 'Av. Ministro Victor Konder, 303, Centro, Itajaí - SC', -26.916540, -48.652070, 'Vidro; plástico; metal; papel; óleo de cozinha; eletrônicos; esponjas; pilhas; baterias; tampinhas; lâmpadas'],
             ['Itajaí', 'Ecoponto Nossa Senhora das Graças', 'Av. Vereador Abrahão João Francisco (Contorno Sul), Ressacada, Itajaí - SC', -26.910100, -48.670500, 'Vidro; plástico; metal; papel; óleo de cozinha; eletrônicos; esponjas; pilhas; baterias; tampinhas; lâmpadas'],
             ['Itajaí', 'PEV São Vicente', 'Rua Érico Veríssimo, 658, São Vicente, Itajaí - SC', -26.907998, -48.696683, 'Recicláveis; RCC; volumosos; poda; lâmpadas; pilhas'],
@@ -81,19 +81,19 @@ class CollectionPointSeeder extends Seeder
             ['Itapema', 'ACI - ponto de eletroeletrônicos e pilhas', 'Rua 106, Centro, Itapema - SC', -27.089900, -48.608500, 'Eletroeletrônicos; pilhas; baterias'],
         ];
 
-        foreach ($pontos as [$cidade, $nome, $endereco, $lat, $lng, $tiposRaw]) {
+        foreach ($points as [$city, $name, $address, $lat, $lng, $rawTypes]) {
             // firstOrCreate rather than create: the seeder runs on every
             // container boot, and re-running it must neither duplicate points
             // nor overwrite edits the team made in /admin.
             CollectionPoint::firstOrCreate(
                 [
-                    'name' => $nome,
-                    'address' => $endereco,
+                    'name' => $name,
+                    'address' => $address,
                 ],
                 [
                     'latitude' => $lat,
                     'longitude' => $lng,
-                    'waste_types' => $this->mapearTipos($tiposRaw),
+                    'waste_types' => $this->mapTypes($rawTypes),
                     'contact_phone' => null,
                     'contact_email' => null,
                     'status' => 'approved',

@@ -21,7 +21,7 @@ class CollectionPointTest extends TestCase
             name: $overrides['name'] ?? 'Farmácia do Bairro',
             address: $overrides['address'] ?? 'Rua das Flores, 100',
             coordinates: new Coordinates(-26.9077, -48.6619),
-            wasteTypes: $overrides['wasteTypes'] ?? [WasteType::Medicamentos],
+            wasteTypes: $overrides['wasteTypes'] ?? [WasteType::Medication],
         );
     }
 

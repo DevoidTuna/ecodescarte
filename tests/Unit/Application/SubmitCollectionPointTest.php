@@ -45,7 +45,7 @@ class SubmitCollectionPointTest extends TestCase
 
         $this->assertSame(ModerationStatus::Pending, $point->status());
         $this->assertSame('Farmácia do Bairro', $point->name());
-        $this->assertSame([WasteType::Medicamentos], $point->wasteTypes());
+        $this->assertSame([WasteType::Medication], $point->wasteTypes());
     }
 
     public function test_the_payload_cannot_ask_for_an_approved_point(): void

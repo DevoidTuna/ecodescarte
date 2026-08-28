@@ -15,14 +15,14 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $dados = $request->validate([
+        $data = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('username', $dados['username'])->first();
+        $user = User::where('username', $data['username'])->first();
 
-        if (! $user || ! Hash::check($dados['password'], $user->password)) {
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
             return response()->json(['message' => 'Usuário ou senha inválidos.'], 401);
         }
 
