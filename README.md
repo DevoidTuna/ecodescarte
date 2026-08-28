@@ -45,6 +45,33 @@ Two decisions worth calling out:
   production rather than an in-memory SQLite, so dialect differences — the `json` column on
   `waste_types`, decimal coordinate precision — cannot pass locally and fail in production.
 
+## Architecture
+
+The moderation flow — submit, queue, approve — is built as **ports and adapters**. Its rules
+live in `app/Domain` as plain PHP: no Eloquent, no facades, no `Illuminate` import anywhere
+inside the directory, which `LayerBoundaryTest` enforces on every run.
+
+The rule that matters is expressed in the type system rather than defended by a line inside a
+controller. `CollectionPoint::submit()` has no status parameter, so no caller — HTTP, console
+or queue — can ask for a point that is born approved. Before the refactor that guarantee was a
+single assignment in the middle of a controller action.
+
+| Piece | Role |
+|---|---|
+| `Domain/CollectionPoint` | Entity, `Coordinates` value object, enums, and the repository **port** |
+| `Application/CollectionPoint` | One class per use case, depending only on the port |
+| `Infrastructure/Persistence` | The Eloquent **adapter** that satisfies the port |
+| `Infrastructure/Http/Presenter` | Turns an entity into the JSON shape the SPA expects |
+| `Http/Controllers` | Validates the request shape, calls a use case, returns the response |
+
+`AppServiceProvider` is the single place where the port meets the adapter — one `bind()` call.
+Swapping the storage engine means editing that line; no use case changes.
+
+**The CRUD routes were deliberately left on plain MVC.** Listing, editing and deleting a point
+carry no rules of their own, and wrapping an `UPDATE` in three layers buys indirection and
+nothing else. The layering went where the business rule is and stopped there — four routes,
+not the whole application.
+
 ## Running with Docker
 
 ```bash
@@ -79,9 +106,19 @@ Then open **http://localhost:8000**.
 
 ## Tests
 
-The suite covers the moderation boundary end to end: a submitted point cannot approve
-itself, an unapproved point never reaches the public map, admin routes are unreachable
-without a valid token, and approving a point publishes it.
+Two suites, and the split is deliberate.
+
+**Unit** — the moderation rules exercised against an in-memory implementation of the
+repository port. No database, no migrations, no framework boot, so the whole suite finishes in
+tens of milliseconds and can run on every save.
+
+```bash
+php artisan test --testsuite=Unit
+```
+
+**Feature** — the same behaviour through the real HTTP stack and PostgreSQL: a submitted point
+cannot approve itself, an unapproved point never reaches the public map, admin routes are
+unreachable without a valid token, and approving a point publishes it.
 
 ```bash
 docker compose up -d db     # the suite needs PostgreSQL running
@@ -104,9 +141,13 @@ Go to **/admin** and sign in with the demo credentials:
 
 ```
 app/
+  Domain/CollectionPoint/  # entity, Coordinates, enums, repository port — plain PHP, no framework
+  Application/CollectionPoint/   # use cases: submit, approve, list published, list pending
+  Infrastructure/Persistence/    # Eloquent adapter satisfying the repository port
+  Infrastructure/Http/Presenter/ # entity -> the JSON shape the SPA consumes
   Http/Controllers/        # public API (points, login) and Admin (approval/CRUD)
   Http/Middleware/         # AuthenticateApiToken — Bearer token guard for admin routes
-  Models/                  # CollectionPoint, User
+  Models/                  # CollectionPoint (persistence only), User
 database/
   factories/               # CollectionPointFactory, UserFactory
   migrations/              # collection points table + auth columns
@@ -120,5 +161,9 @@ resources/js/
 routes/
   api.php                  # API routes, public and token-protected
   web.php                  # fallback that serves the SPA
-tests/Feature/             # approval workflow and authentication
+tests/
+  Unit/Domain/             # entity rules and the layer-boundary check, no database
+  Unit/Application/        # use cases driven through the in-memory port
+  Support/                 # InMemoryCollectionPointRepository — the second adapter
+  Feature/                 # approval workflow and authentication, against PostgreSQL
 ```
