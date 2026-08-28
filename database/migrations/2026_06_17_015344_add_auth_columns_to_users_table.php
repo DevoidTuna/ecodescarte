@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Adiciona login por usuário e token de API à tabela de usuários.
+     * Adds username login and an API token to the users table.
      */
     public function up(): void
     {

@@ -7,20 +7,20 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Cria a tabela de pontos de coleta de resíduos.
+     * Creates the waste collection points table.
      */
     public function up(): void
     {
         Schema::create('collection_points', function (Blueprint $table) {
             $table->id();
-            $table->string('name');                 // nome do local
-            $table->string('address');              // endereço textual
-            $table->decimal('latitude', 10, 7);     // coordenada
-            $table->decimal('longitude', 10, 7);    // coordenada
-            $table->json('waste_types');            // lista de tipos de resíduo (array)
+            $table->string('name');                 // name of the place
+            $table->string('address');              // free-text address
+            $table->decimal('latitude', 10, 7);     // coordinate
+            $table->decimal('longitude', 10, 7);    // coordinate
+            $table->json('waste_types');            // list of waste types (array)
             $table->string('contact_phone')->nullable();
             $table->string('contact_email')->nullable();
-            $table->string('status')->default('pending'); // 'pending' ou 'approved'
+            $table->string('status')->default('pending'); // 'pending' or 'approved'
             $table->timestamps();
         });
     }

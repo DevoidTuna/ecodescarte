@@ -7,8 +7,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Cobre o login da equipe: emissão do token, rejeição de credenciais
- * inválidas e o fato de o token cru nunca ser persistido.
+ * Covers the team login: issuing the token, rejecting invalid credentials,
+ * and the fact that the raw token is never persisted.
  */
 class AuthTest extends TestCase
 {
@@ -72,7 +72,7 @@ class AuthTest extends TestCase
 
         $stored = $user->fresh()->api_token;
 
-        // O valor que trafega para o cliente não pode ser o que está no banco.
+        // The value handed to the client must not be the one held in the database.
         $this->assertNotSame($token, $stored);
         $this->assertSame(hash('sha256', $token), $stored);
     }
@@ -92,7 +92,7 @@ class AuthTest extends TestCase
 
         $this->withHeaders($headers)->postJson('/api/logout')->assertNoContent();
 
-        // O mesmo token não vale mais depois do logout.
+        // The same token is no longer valid once logged out.
         $this->withHeaders($headers)->getJson('/api/admin/points')->assertUnauthorized();
     }
 }

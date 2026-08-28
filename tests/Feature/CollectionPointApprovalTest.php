@@ -8,16 +8,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Cobre a fronteira central da aplicação: um ponto sugerido pelo público só
- * chega ao mapa depois que a equipe o aprova, e as rotas de administração não
- * são alcançáveis sem token.
+ * Covers the central boundary of the application: a point submitted by the
+ * public only reaches the map once the team approves it, and the admin routes
+ * are unreachable without a token.
  */
 class CollectionPointApprovalTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
-     * Cria um membro da equipe e devolve o cabeçalho de autorização dele.
+     * Creates a team member and returns their authorization header.
      *
      * @return array<string, string>
      */
@@ -37,7 +37,7 @@ class CollectionPointApprovalTest extends TestCase
     }
 
     /**
-     * O payload mínimo que o formulário público envia.
+     * The minimum payload the public form sends.
      *
      * @return array<string, mixed>
      */
@@ -66,7 +66,7 @@ class CollectionPointApprovalTest extends TestCase
 
     public function test_a_submitted_point_is_pending_even_if_the_request_asks_for_approved(): void
     {
-        // Uma sugestão do público não pode se autoaprovar forjando o campo status.
+        // A public submission cannot approve itself by forging the status field.
         $this->postJson('/api/points', $this->validPayload(['status' => 'approved']))
             ->assertCreated()
             ->assertJsonPath('status', 'pending');
@@ -139,7 +139,7 @@ class CollectionPointApprovalTest extends TestCase
             ->assertJsonCount(1)
             ->assertJsonFragment(['name' => 'Aguardando']);
 
-        // A listagem geral da equipe, ao contrário, mostra os dois.
+        // The team's full listing, by contrast, shows both.
         $this->withHeaders($headers)
             ->getJson('/api/admin/points')
             ->assertOk()

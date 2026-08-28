@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 class AuthenticateApiToken
 {
     /**
-     * Protege as rotas da equipe: exige um token válido no cabeçalho
-     * Authorization: Bearer <token>.
+     * Guards the team routes: requires a valid token in the
+     * Authorization: Bearer <token> header.
      *
      * @param  Closure(Request): (Response)  $next
      */
@@ -29,7 +29,7 @@ class AuthenticateApiToken
             return response()->json(['message' => 'Token inválido ou expirado.'], 401);
         }
 
-        // Disponibiliza o usuário autenticado para os controllers.
+        // Makes the authenticated user available to the controllers.
         $request->setUserResolver(fn () => $user);
 
         return $next($request);

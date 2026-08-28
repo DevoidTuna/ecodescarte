@@ -10,8 +10,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * O entrypoint do container roda o seed a cada boot, então reexecutá-lo
- * precisa ser inofensivo. Estes testes travam essa garantia.
+ * The container entrypoint seeds on every boot, so re-running the seeder has
+ * to be harmless. These tests pin that guarantee down.
  */
 class SeederTest extends TestCase
 {

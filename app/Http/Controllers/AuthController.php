@@ -10,8 +10,8 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
     /**
-     * Login da equipe por usuário + senha.
-     * Em caso de sucesso, gera um token e o devolve para o cliente.
+     * Team login with username + password.
+     * On success it generates a token and hands it back to the client.
      */
     public function login(Request $request)
     {
@@ -26,7 +26,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Usuário ou senha inválidos.'], 401);
         }
 
-        // Gera um token e guarda o hash no banco (o token cru fica só com o cliente).
+        // Generate a token and store only its hash (the raw value stays with the client).
         $token = Str::random(60);
         $user->update(['api_token' => hash('sha256', $token)]);
 
@@ -37,7 +37,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout: invalida o token atual.
+     * Logout: invalidates the current token.
      */
     public function logout(Request $request)
     {

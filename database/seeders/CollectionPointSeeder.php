@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class CollectionPointSeeder extends Seeder
 {
     /**
-     * Dicionário: termo livre do CSV (minúsculo) => tipo canônico da aplicação.
+     * Dictionary: free-text term from the CSV (lowercased) => canonical type.
      */
     private const MAPA_TIPOS = [
         'vidro' => 'vidro',
@@ -38,8 +38,8 @@ class CollectionPointSeeder extends Seeder
     ];
 
     /**
-     * Converte a string de tipos do CSV ("a; b; c") na lista canônica,
-     * sem duplicatas. Termos desconhecidos viram 'outros'.
+     * Converts the CSV type string ("a; b; c") into the canonical list, with
+     * no duplicates. Unknown terms become 'outros'.
      */
     private function mapearTipos(string $raw): array
     {
@@ -55,7 +55,7 @@ class CollectionPointSeeder extends Seeder
     }
 
     /**
-     * Pontos reais de coleta (todos aprovados) — Itajaí e região (SC).
+     * Real collection points (all approved) — Itajaí and its region (SC).
      */
     public function run(): void
     {
@@ -82,9 +82,9 @@ class CollectionPointSeeder extends Seeder
         ];
 
         foreach ($pontos as [$cidade, $nome, $endereco, $lat, $lng, $tiposRaw]) {
-            // firstOrCreate em vez de create: o seeder roda a cada boot do
-            // container, e reexecutá-lo não pode duplicar os pontos nem
-            // sobrescrever ajustes feitos pela equipe no /admin.
+            // firstOrCreate rather than create: the seeder runs on every
+            // container boot, and re-running it must neither duplicate points
+            // nor overwrite edits the team made in /admin.
             CollectionPoint::firstOrCreate(
                 [
                     'name' => $nome,

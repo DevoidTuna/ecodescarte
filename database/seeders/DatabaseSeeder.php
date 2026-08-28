@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Popula o banco com o usuário da equipe e os pontos de coleta.
+     * Populates the database with the team user and the collection points.
      */
     public function run(): void
     {
-        // Usuário da equipe (login do admin). Protótipo: admin / admin.
+        // The team user (the admin login). Prototype credentials: admin / admin.
         User::updateOrCreate(
             ['username' => 'admin'],
             [

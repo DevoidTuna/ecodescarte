@@ -7,7 +7,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Dependências primeiro, para aproveitar o cache de camadas entre builds.
+# Dependencies first, to reuse the layer cache between builds.
 COPY composer.json composer.lock ./
 RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
 
@@ -17,7 +17,7 @@ RUN npm ci --ignore-scripts
 COPY . .
 RUN composer dump-autoload --optimize && npm run build
 
-# Fora de /app para o bind mount do compose não sobrescrever o script.
+# Outside /app so the compose bind mount does not shadow the script.
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

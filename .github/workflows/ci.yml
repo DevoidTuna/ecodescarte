@@ -11,8 +11,8 @@ jobs:
     name: Feature tests (PostgreSQL)
     runs-on: ubuntu-latest
 
-    # Mesmas credenciais do .env.testing, para que a suíte rode sem
-    # nenhuma variável de ambiente extra.
+    # The same credentials as .env.testing, so the suite runs without any
+    # extra environment variables.
     services:
       postgres:
         image: postgres:16-alpine
@@ -81,7 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Sobe exatamente como um clone novo subiria: um comando, nada manual.
+      # Boots exactly the way a fresh clone would: one command, nothing manual.
       - name: docker compose up
         run: docker compose up --build -d
 
@@ -97,8 +97,8 @@ jobs:
           echo "servidor não aceitou conexões"
           exit 1
 
-      # Prova que o entrypoint migrou e populou o banco: os pontos do seed
-      # precisam estar sendo servidos pela API.
+      # Proves the entrypoint migrated and seeded the database: the seeded
+      # points must be coming back from the API.
       - name: The seeded points must be served
         run: |
           curl -sS -o points.json -w 'status=%{http_code}\n' --fail http://localhost:8000/api/points

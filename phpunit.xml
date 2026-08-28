@@ -18,8 +18,8 @@
         </include>
     </source>
     <php>
-        <!-- A conexão de banco vem do .env.testing (Postgres), para que os
-             testes rodem no mesmo dialeto que desenvolvimento e produção. -->
+        <!-- The database connection comes from .env.testing (Postgres), so the
+             tests run on the same dialect as development and production. -->
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
