@@ -5,37 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Persistence model for the collection_points table.
+ *
+ * In the moderation flow it is used only by the infrastructure repository,
+ * which translates it into the App\Domain\CollectionPoint entity. The canonical
+ * list of waste types lives in the WasteType enum, not here any more.
+ */
 class CollectionPoint extends Model
 {
     /** @use HasFactory<\Database\Factories\CollectionPointFactory> */
     use HasFactory;
 
     /**
-     * Tipos de resíduo aceitos pela aplicação (valores canônicos).
-     * Os termos livres do CSV são mapeados para estes valores no seeder.
-     */
-    public const WASTE_TYPES = [
-        'pilhas',        // pilhas e baterias
-        'oleo',          // óleo de cozinha
-        'eletronicos',   // eletrônicos / eletroeletrônicos / eletrodomésticos
-        'lampadas',
-        'vidro',
-        'plastico',
-        'metal',
-        'papel',
-        'reciclaveis',   // recicláveis (secos)
-        'pneus',
-        'tampinhas',
-        'esponjas',
-        'entulho',       // RCC / resíduos de construção
-        'volumosos',
-        'poda',
-        'medicamentos',
-        'outros',        // logística reversa / ponto de apoio institucional
-    ];
-
-    /**
-     * Campos preenchíveis em massa.
+     * Mass-assignable fields.
      */
     protected $fillable = [
         'name',
@@ -49,12 +32,12 @@ class CollectionPoint extends Model
     ];
 
     /**
-     * Conversão de tipos das colunas.
+     * Column casts.
      */
     protected function casts(): array
     {
         return [
-            'waste_types' => 'array',   // coluna json <-> array PHP
+            'waste_types' => 'array',   // json column <-> PHP array
             'latitude' => 'float',
             'longitude' => 'float',
         ];
